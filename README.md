@@ -60,3 +60,46 @@ example_output_payload:
     TASK:
     Generate the database connection module and the user authentication route. 
     Output only the exact code blocks with file names.
+
+
+----
+'''
+Pitch
+
+Architecture constraint generation for AI-assisted software development.
+
+Problem
+
+LLMs generate code.
+
+They don't preserve architecture.
+
+MVP
+
+Input:
+
+python
+sqlite
+single-process
+no-framework
+
+Output:
+
+Project Constraints:
+- no async
+- no ORM
+- sqlite only
+- max module size 500 lines
+...
+README Opening
+
+Stack Oracle generates deterministic architectural constraints for AI-assisted software projects. Instead of asking models to "build an app," define the rules first and enforce them throughout development.
+
+Signals
+
+This proves:
+
+AI literacy
+software architecture
+systems thinking
+'''
