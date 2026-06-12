@@ -1,105 +1,49 @@
-# stack_oracle
-Generate mechanically deterministic architecture constraints to ground commercial LLM code generation.
+# stack-oracle
 
-status: "concept_draft"
-objective: "Generate mechanically deterministic architecture constraints to ground commercial LLM code generation."
+LLMs are good at writing functions but terrible at maintaining architecture. If you ask a model to "build a web app," it will likely hallucinate a mix of outdated libraries, conflicting versions, and insecure file structures. It guesses.
 
-core_engine:
-  type: "local_cli_tool"
-  compute_requirement: "extremely_low"
-  dependencies:
-    - "python 3.11"
-    - "sqlite3"
-    - "jinja2" # for prompt templating
+Stack Oracle stops the guessing. It is a local CLI tool that generates a set of rigid, mechanically deterministic constraints to ground AI code generation. Instead of asking a model to decide your database driver or folder hierarchy, you define the rules first. You give the AI a box to work inside.
 
-architecture_flow:
-  step_1_ingestion:
-    description: "User selects desired tech stack components via CLI."
-    inputs:
-      frontend: "react 18"
-      backend: "fastapi 0.100"
-      database: "postgres 15"
-      auth: "clerk"
-  
-  step_2_deterministic_analysis:
-    description: "System cross-references local graph of known interactions."
-    actions:
-      check_version_conflicts: true
-      fetch_known_bugs: true
-      identify_required_middleware: "e.g., asyncpg for fastapi to talk to postgres"
-      flag_anti_patterns: "e.g., warning against storing JWTs in localstorage"
+### The Problem: Architectural Rot
 
-  step_3_prompt_compilation:
-    description: "Engine injects the analysis into a highly structured system prompt."
-    components:
-      - "Strict role definition"
-      - "Explicit version constraints"
-      - "Required file structure layout"
-      - "Banned practices based on known conflicts"
-      - "Mandatory testing targets"
+AI-generated code lacks context. A model might write a perfect React component but use a routing library that was deprecated three years ago. It might suggest a synchronous database call inside an asynchronous FastAPI route, which blocks the event loop and kills performance. These small inconsistencies accumulate into architectural rot that takes hours to debug.
 
-  step_4_output:
-    description: "A single text payload handed to the user."
-    payload_format: "markdown"
-    usage: "User pastes this into Claude, Gemini, or ChatGPT."
+### How it works
 
-example_output_payload:
-  system_instruction: |
-    You are an expert systems architect building a web application.
-    You must strictly obey the following environmental constraints.
-    
-    ENVIRONMENT:
-    - Backend: FastAPI (v0.100). You MUST use async definitions for all endpoints.
-    - Database: PostgreSQL (v15). You MUST use asyncpg for connections. Do not use psycopg2.
-    - Frontend: React (v18). 
-    
-    KNOWN CONFLICTS TO AVOID:
-    - FastAPI 0.100 has a known issue with Pydantic v1. You MUST use Pydantic v2 schemas.
-    - Do not write synchronous database calls inside async path operations, it will block the event loop.
+The tool uses a local graph of known software interactions to identify conflicts before you ever open a chat window.
 
-    TASK:
-    Generate the database connection module and the user authentication route. 
-    Output only the exact code blocks with file names.
+*   **Ingestion:** You select your components (e.g., Python 3.11, PostgreSQL 15, FastAPI).
+*   **Deterministic Analysis:** The engine cross-references your stack against a local SQLite database of known bugs and version requirements. It identifies the exact middleware needed (like `asyncpg` for Postgres) and flags dangerous patterns.
+*   **Prompt Compilation:** It injects these rules into a structured system prompt using Jinja2 templates.
+*   **Output:** You get a single text payload to paste into Claude, Gemini, or ChatGPT.
 
+### System Architecture
 
-----
-'''
-Pitch
+The engine is built to be lightweight and local-first.
 
-Architecture constraint generation for AI-assisted software development.
+1.  **Local CLI:** Built with Python 3.11. 
+2.  **Constraint Database:** A local SQLite file stores the relationship graph between different technologies. 
+3.  **Prompt Templates:** Uses Jinja2 to ensure the output is formatted for high-token-weight attention in commercial LLMs.
 
-Problem
+### Example Output Constraint
 
-LLMs generate code.
+When you run Stack Oracle, it produces a block of instructions like this:
 
-They don't preserve architecture.
+```text
+You are an expert systems architect. You must obey these environmental constraints:
 
-MVP
+- Backend: FastAPI (v0.100). Use async definitions for all endpoints.
+- Database: PostgreSQL (v15). Use asyncpg. Do not use psycopg2.
+- Validation: FastAPI 0.100 requires Pydantic v2 schemas.
 
-Input:
+BANNED PRACTICES:
+- No synchronous database calls.
+- No storing JWTs in localstorage.
+- No global variable state for database sessions.
+```
 
-python
-sqlite
-single-process
-no-framework
+### Why this exists
 
-Output:
+I built this because "prompt engineering" is often just a fancy word for "vague requests." If you want an AI to be a useful assistant, you have to treat it like a junior developer who has read every manual but has no common sense. You provide the boundaries. You enforce the versions. 
 
-Project Constraints:
-- no async
-- no ORM
-- sqlite only
-- max module size 500 lines
-...
-README Opening
-
-Stack Oracle generates deterministic architectural constraints for AI-assisted software projects. Instead of asking models to "build an app," define the rules first and enforce them throughout development.
-
-Signals
-
-This proves:
-
-AI literacy
-software architecture
-systems thinking
-'''
+Structure comes first. The code follows.
